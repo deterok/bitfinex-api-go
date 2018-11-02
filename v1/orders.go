@@ -3,6 +3,8 @@ package bitfinex
 import (
 	"math"
 	"strconv"
+
+	"github.com/shopspring/decimal"
 )
 
 // Order types that the API can return.
@@ -75,10 +77,10 @@ func (s *OrderService) CancelAll() error {
 }
 
 // Create a new order.
-func (s *OrderService) Create(symbol string, amount float64, price float64, orderType string) (*Order, error) {
+func (s *OrderService) Create(symbol string, amount decimal.Decimal, price decimal.Decimal, orderType string) (*Order, error) {
 	var side string
-	if amount < 0 {
-		amount = math.Abs(amount)
+	if amount.LessThan(decimal.Zero) {
+		amount = amount.Abs()
 		side = "sell"
 	} else {
 		side = "buy"
@@ -86,8 +88,8 @@ func (s *OrderService) Create(symbol string, amount float64, price float64, orde
 
 	payload := map[string]interface{}{
 		"symbol":   symbol,
-		"amount":   strconv.FormatFloat(amount, 'f', -1, 32),
-		"price":    strconv.FormatFloat(price, 'f', -1, 32),
+		"amount":   amount.String(),
+		"price":    amount.String(),
 		"side":     side,
 		"type":     orderType,
 		"exchange": "bitfinex",
